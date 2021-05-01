@@ -1,17 +1,20 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
+import React, { Component, Fragment } from "react";
 import axios from "axios";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 import Navbar from "./Components/Layout/Navbar";
 import Users from "./Components/Users/Users";
 import Search from "./Components/Users/Search";
 import Alert from "./Components/Layout/Alert";
+import About from "./Components/Pages/About";
+import User from "./Components/Users/User";
 
 import "./App.css";
 
 class App extends Component {
 	state = {
 		users: [],
+		user: {},
 		loading: false,
 		alert: null,
 	};
@@ -29,9 +32,22 @@ class App extends Component {
 			`https://api.github.com/search/users?q=${text}&client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
 		);
 
-		// console.log(res.data.items);
+		console.log(res.data);
 
 		this.setState({ users: res.data.items, loading: false });
+	};
+
+	//GET A SINGLE GITHUB USER
+	getUser = async username => {
+		this.setState({ loading: true });
+
+		const res = await axios.get(
+			`https://api.github.com/users/${username}?client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
+		);
+
+		console.log(res.data);
+
+		this.setState({ user: res.data, loading: false });
 	};
 
 	clearUsers = () => {
@@ -45,28 +61,49 @@ class App extends Component {
 	};
 
 	render() {
-		const { users, loading } = this.state;
+		const { users, user, loading } = this.state;
 		return (
-			<div className='App'>
-				<Navbar title='Github ID Finder' />
-				<Alert alert={this.state.alert} />
-				{/* <UserItem /> */}
-				<Search
-					searchUsers={this.searchUsers}
-					clearUsers={this.clearUsers}
-					showClear={users.length > 0 ? true : false}
-					setAlert={this.setAlert}
-				/>
-				<div className='container'>
-					<Users loading={loading} users={users} />
+			<Router>
+				<div className='App'>
+					<Navbar title='Github ID Finder' />
+					<div className='container'>
+						<Alert alert={this.state.alert} />
+						<Switch>
+							<Route
+								exact
+								path='/'
+								render={props => (
+									<Fragment>
+										<Search
+											searchUsers={this.searchUsers}
+											clearUsers={this.clearUsers}
+											showClear={users.length > 0 ? true : false}
+											setAlert={this.setAlert}
+										/>
+
+										<Users loading={loading} users={users} />
+									</Fragment>
+								)}
+							/>
+							<Route exact path='/about' component={About} />
+							<Route
+								exact
+								path='/user/:login'
+								render={props => (
+									<User
+										{...props}
+										getUser={this.getUser}
+										user={user}
+										loading={loading}
+									/>
+								)}
+							/>
+						</Switch>
+					</div>
 				</div>
-			</div>
+			</Router>
 		);
 	}
-
-	// static PropTyes = {
-	// 	searchUsers: PropTypes.func.isRequired,
-	// };
 }
 
 export default App;
