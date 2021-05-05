@@ -26,7 +26,7 @@ class Search extends Component {
 		const { showClear, clearUsers } = this.props;
 		return (
 			<div>
-				<form onSubmit={this.onSubmit} className='form' style={searchStyle}>
+				<form onSubmit={this.onSubmit} className='form'>
 					<input
 						type='text'
 						name='text'
@@ -56,9 +56,5 @@ class Search extends Component {
 		setAlert: PropTypes.func.isRequired,
 	};
 }
-
-const searchStyle = {
-	display: "grid",
-};
 
 export default Search;
